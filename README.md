@@ -1,9 +1,12 @@
 # cab-booking
 Cab booking application using Java springboot
 
-## Comamnds to run the container
+### commands to run the container using root
 ```
-git clone <git-url>
-docker build -t cab-image:v1 .
-docker run -d run --name cab-cont 1111:8080 cab-image:v1
+yum install git docker -y
+systemctl start docker
+systemctl enable docker
+git clone https://github.com/Kajjayamsriram/cab-booking.git
+cd cab-booking; docker build -t cab-image:v1 .
+docker run -d --name cab-cont -p 1111:8080 cab-image:v1
 ```
