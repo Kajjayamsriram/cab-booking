@@ -1,0 +1,84 @@
+<!-- my-bookings.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Rides - SafeRide</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            background: #f5f5f5;
+        }
+        
+        .rides-container {
+            max-width: 1000px;
+            margin: 50px auto;
+        }
+        
+        .ride-card {
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .ride-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-PENDING { background: #ffc107; color: #000; }
+        .status-CONFIRMED { background: #17a2b8; color: #fff; }
+        .status-IN_PROGRESS { background: #007bff; color: #fff; }
+        .status-COMPLETED { background: #28a745; color: #fff; }
+        .status-CANCELLED { background: #dc3545; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container rides-container">
+        <h2 class="mb-4">
+            <i class="fas fa-history"></i> My Ride History
+        </h2>
+        
+        <div th:each="booking : ${bookings}" class="ride-card">
+            <div class="row align-items-center">
+                <div class="col-md-1">
+                    <i class="fas fa-taxi fa-2x" style="color: #ff6b35;"></i>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted">TRIP ID</small>
+                    <h6>#<span th:text="${booking.id}"></span></h6>
+                    <small class="text-muted">
+                        <i class="far fa-calendar-alt"></i> 
+                        <span th:text="${#temporals.format(booking.bookingTime, 'dd MMM yyyy, hh:mm a')}"></span>
+                    </small>
+                </div>
+                <div class="col-md-4">
+                    <div><i class="fas fa-circle text-success"></i> <span th:text="${booking.pickupLocation}"></span></div>
+                    <div class="my-2"><i class="fas fa-arrow-down"></i></div>
+                    <div><i class="fas fa-flag-checkered text-danger"></i> <span th:text="${booking.dropLocation}"></span></div>
+                </div>
+                <div class="col-md-2">
+                    <div class="status-badge" th:classappend="'status-' + ${booking.status}" th:text="${booking.status}"></div>
+                    <h5 class="mt-2 mb-0">₹<span th:text="${booking.fare}"></span></h5>
+                </div>
+                <div class="col-md-1">
+                    <a th:href="@{/booking/track/{id}(id=${booking.id})}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

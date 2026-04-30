@@ -1,0 +1,293 @@
+<!-- booking-form.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Cab - SafeRide</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff6b35;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .booking-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .booking-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), #ff8c42);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(255,107,53,0.25);
+        }
+        
+        .cab-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cab-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .cab-card.selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,140,66,0.1));
+        }
+        
+        .cab-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .fare-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .btn-book {
+            background: linear-gradient(135deg, var(--primary-color), #ff8c42);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .location-input {
+            position: relative;
+        }
+        
+        .location-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        .location-input input {
+            padding-left: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container booking-container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="booking-card">
+                    <div class="card-header">
+                        <i class="fas fa-taxi fa-3x mb-3"></i>
+                        <h2 class="mb-0">Book Your Ride</h2>
+                        <p class="mb-0">Fast, Safe & Comfortable</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <form id="bookingForm" action="/booking/create" method="post">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-map-marker-alt text-danger"></i> Pickup Location
+                                        </label>
+                                        <div class="location-input">
+                                            <i class="fas fa-location-dot location-icon"></i>
+                                            <input type="text" class="form-control" name="pickupLocation" 
+                                                   id="pickupLocation" required placeholder="Enter pickup address">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-flag-checkered text-success"></i> Drop Location
+                                        </label>
+                                        <div class="location-input">
+                                            <i class="fas fa-location-dot location-icon"></i>
+                                            <input type="text" class="form-control" name="dropLocation" 
+                                                   id="dropLocation" required placeholder="Enter destination">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-car"></i> Select Cab Type
+                                </label>
+                                <div class="row" id="cabTypes">
+                                    <div class="col-md-3">
+                                        <div class="cab-card" data-cab="Mini" data-rate="8">
+                                            <div class="text-center">
+                                                <i class="fas fa-car cab-icon"></i>
+                                                <h5>Mini</h5>
+                                                <small>₹8/km</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="cab-card" data-cab="Sedan" data-rate="12">
+                                            <div class="text-center">
+                                                <i class="fas fa-car-side cab-icon"></i>
+                                                <h5>Sedan</h5>
+                                                <small>₹12/km</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="cab-card" data-cab="SUV" data-rate="15">
+                                            <div class="text-center">
+                                                <i class="fas fa-truck cab-icon"></i>
+                                                <h5>SUV</h5>
+                                                <small>₹15/km</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="cab-card" data-cab="Luxury" data-rate="20">
+                                            <div class="text-center">
+                                                <i class="fas fa-gem cab-icon"></i>
+                                                <h5>Luxury</h5>
+                                                <small>₹20/km</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="cabType" id="selectedCab">
+                            </div>
+                            
+                            <div class="fare-display" id="fareDisplay" style="display: none;">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small>Distance</small>
+                                        <h4 id="distance">0 km</h4>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <small>Estimated Fare</small>
+                                        <h4 id="fare">₹0</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-book mt-3" id="bookBtn" disabled>
+                                <i class="fas fa-taxi"></i> Book Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let selectedCab = null;
+            
+            $('.cab-card').click(function() {
+                $('.cab-card').removeClass('selected');
+                $(this).addClass('selected');
+                selectedCab = $(this).data('cab');
+                $('#selectedCab').val(selectedCab);
+                calculateFare();
+            });
+            
+            $('#pickupLocation, #dropLocation').on('input', function() {
+                if ($('#pickupLocation').val() && $('#dropLocation').val() && selectedCab) {
+                    calculateFare();
+                }
+            });
+            
+            function calculateFare() {
+                if ($('#pickupLocation').val() && $('#dropLocation').val() && selectedCab) {
+                    $.ajax({
+                        url: '/booking/calculate-fare',
+                        method: 'POST',
+                        data: {
+                            pickup: $('#pickupLocation').val(),
+                            drop: $('#dropLocation').val(),
+                            cabType: selectedCab
+                        },
+                        success: function(response) {
+                            $('#distance').text(response.distance.toFixed(1) + ' km');
+                            $('#fare').text('₹' + response.fare.toFixed(0));
+                            $('#fareDisplay').fadeIn();
+                            $('#bookBtn').prop('disabled', false);
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
