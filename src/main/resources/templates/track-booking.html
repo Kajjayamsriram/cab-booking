@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Ride - SafeRide</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Track Your Ride</h2>
+        <div class="card">
+            <div class="card-body">
+                <h5>Booking #<span th:text="${booking.id}"></span></h5>
+                <p>Status: <span class="badge" th:classappend="'bg-' + ${booking.status == 'PENDING' ? 'warning' : 'success'}">[[${booking.status}]]</span></p>
+                <p>Driver: [[${booking.driver != null ? booking.driver.name : 'Assigning driver...'}]]</p>
+                <p>Estimated Arrival: 5-10 minutes</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

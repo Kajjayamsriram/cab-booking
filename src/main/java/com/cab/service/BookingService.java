@@ -3,12 +3,14 @@ package com.cab.service;
 import com.cab.model.Booking;
 import com.cab.model.User;
 import com.cab.repository.BookingRepository;
+import com.cab.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @Service
 public class BookingService {
@@ -16,16 +18,32 @@ public class BookingService {
     @Autowired
     private BookingRepository bookingRepository;
     
-    private Map<String, double[]> locationCoordinates = new HashMap<>();
+    @Autowired
+    private UserRepository userRepository;
     
-    public BookingService() {
-        locationCoordinates.put("Airport", new double[]{28.5562, 77.1000});
-        locationCoordinates.put("Railway Station", new double[]{28.6611, 77.2273});
-        locationCoordinates.put("City Center", new double[]{28.6139, 77.2090});
+    private Random random = new Random();
+    private User defaultUser;
+    
+    private User getDefaultUser() {
+        if (defaultUser == null) {
+            defaultUser = userRepository.findByEmail("guest@example.com");
+            if (defaultUser == null) {
+                defaultUser = new User();
+                defaultUser.setName("Guest User");
+                defaultUser.setEmail("guest@example.com");
+                defaultUser.setPhone("9999999999");
+                defaultUser.setPassword("guest123");
+                defaultUser.setRole("USER");
+                defaultUser.setCreatedAt(LocalDateTime.now());
+                defaultUser = userRepository.save(defaultUser);
+                System.out.println("✅ Default user created with ID: " + defaultUser.getId());
+            }
+        }
+        return defaultUser;
     }
     
     public double calculateDistance(String pickup, String drop) {
-        return Math.random() * 30 + 5;
+        return 5 + random.nextDouble() * 30;
     }
     
     public double calculateFare(double distance, String cabType) {
@@ -45,33 +63,48 @@ public class BookingService {
             fare *= 1.2;
         }
         
-        return fare;
+        return Math.round(fare);
     }
     
     public Booking createBooking(Booking booking) {
+        User user = getDefaultUser();
+        
+        double distance = calculateDistance(booking.getPickupLocation(), booking.getDropLocation());
+        double fare = calculateFare(distance, booking.getCabType());
+        
+        booking.setDistance(distance);
+        booking.setFare(fare);
         booking.setBookingTime(LocalDateTime.now());
         booking.setStatus("PENDING");
-        // Create a dummy user for now
-        User dummyUser = new User();
-        dummyUser.setId(1L);
-        dummyUser.setName("John Doe");
-        dummyUser.setEmail("john@example.com");
-        dummyUser.setPhone("1234567890");
-        booking.setUser(dummyUser);
+        booking.setUser(user);
+        
         return bookingRepository.save(booking);
     }
     
     public List<Booking> getUserBookings() {
-        return bookingRepository.findByUserIdOrderByBookingTimeDesc(1L);
+        User user = getDefaultUser();
+        return bookingRepository.findByUserIdOrderByBookingTimeDesc(user.getId());
     }
     
     public void cancelBooking(Long id) {
-        Booking booking = bookingRepository.findById(id).orElseThrow();
-        booking.setStatus("CANCELLED");
-        bookingRepository.save(booking);
+        Booking booking = bookingRepository.findById(id).orElse(null);
+        if (booking != null && booking.getStatus().equals("PENDING")) {
+            booking.setStatus("CANCELLED");
+            bookingRepository.save(booking);
+            System.out.println("❌ Ride " + id + " cancelled");
+        }
+    }
+    
+    public void completeRide(Long id) {
+        Booking booking = bookingRepository.findById(id).orElse(null);
+        if (booking != null && (booking.getStatus().equals("CONFIRMED") || booking.getStatus().equals("IN_PROGRESS") || booking.getStatus().equals("PENDING"))) {
+            booking.setStatus("COMPLETED");
+            bookingRepository.save(booking);
+            System.out.println("✅ Ride " + id + " completed!");
+        }
     }
     
     public Booking getBookingById(Long id) {
-        return bookingRepository.findById(id).orElseThrow();
+        return bookingRepository.findById(id).orElse(null);
     }
 }

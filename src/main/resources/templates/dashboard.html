@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeRide - Complete Cab Booking System</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/font-awesome/6.5.1/css/all.min.css">
+    <script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .service-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .content-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .content-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .cab-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .cab-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .cab-option.selected {
+            border-color: #ff6b35;
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,140,66,0.1));
+        }
+        
+        .cab-icon {
+            font-size: 40px;
+            color: #ff6b35;
+        }
+        
+        .fare-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .btn-book {
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .booking-item {
+            border-left: 4px solid;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .booking-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-PENDING { border-left-color: #ffc107; }
+        .status-CONFIRMED { border-left-color: #17a2b8; }
+        .status-IN_PROGRESS { border-left-color: #007bff; }
+        .status-COMPLETED { border-left-color: #28a745; }
+        .status-CANCELLED { border-left-color: #dc3545; }
+        
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .btn-cancel {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            margin: 2px;
+            cursor: pointer;
+        }
+        
+        .btn-complete {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            margin: 2px;
+            cursor: pointer;
+        }
+        
+        .btn-cancel:hover, .btn-complete:hover {
+            transform: scale(1.05);
+        }
+        
+        .profile-field {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .profile-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .profile-value {
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-update {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-taxi"></i> SafeRide
+            </div>
+            <p class="text-muted mt-2">Your Complete Cab Booking Solution</p>
+        </div>
+
+        <!-- Service Cards -->
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="service-card" onclick="showPanel('book')">
+                    <div class="service-icon" style="color: #ff6b35;">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <h4>Book a Cab</h4>
+                    <p>Book your ride instantly</p>
+                    <span class="badge bg-primary">Active</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="service-card" onclick="showPanel('track')">
+                    <div class="service-icon" style="color: #17a2b8;">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Track Ride</h4>
+                    <p>Track your active ride</p>
+                    <span class="badge bg-info">Live</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="service-card" onclick="showPanel('history')">
+                    <div class="service-icon" style="color: #28a745;">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h4>Ride History</h4>
+                    <p>View past rides</p>
+                    <span class="badge bg-success">Archived</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="service-card" onclick="showPanel('profile')">
+                    <div class="service-icon" style="color: #6f42c1;">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h4>My Profile</h4>
+                    <p>Account settings</p>
+                    <span class="badge bg-secondary">Profile</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Book Cab Panel -->
+        <div id="bookPanel" class="content-panel">
+            <h3><i class="fas fa-taxi text-primary"></i> Book Your Cab</h3>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-map-marker-alt text-danger"></i> Pickup Location</label>
+                        <input type="text" class="form-control" id="pickup" placeholder="Enter pickup address" value="Airport">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-flag-checkered text-success"></i> Drop Location</label>
+                        <input type="text" class="form-control" id="drop" placeholder="Enter destination" value="City Center">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label"><i class="fas fa-car"></i> Select Cab Type</label>
+                <div class="row" id="cabTypes">
+                    <div class="col-md-3">
+                        <div class="cab-option" data-cab="Mini" data-rate="8">
+                            <i class="fas fa-car cab-icon"></i>
+                            <h6>Mini</h6>
+                            <small>₹8/km | 4 seats</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="cab-option" data-cab="Sedan" data-rate="12">
+                            <i class="fas fa-car-side cab-icon"></i>
+                            <h6>Sedan</h6>
+                            <small>₹12/km | 4 seats</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="cab-option" data-cab="SUV" data-rate="15">
+                            <i class="fas fa-truck cab-icon"></i>
+                            <h6>SUV</h6>
+                            <small>₹15/km | 6 seats</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="cab-option" data-cab="Luxury" data-rate="20">
+                            <i class="fas fa-gem cab-icon"></i>
+                            <h6>Luxury</h6>
+                            <small>₹20/km | 4 seats</small>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="selectedCab">
+            </div>
+            
+            <div id="fareDisplay" style="display: none;">
+                <div class="fare-display">
+                    <div class="row">
+                        <div class="col-6">
+                            <small>Distance</small>
+                            <h4 id="distance">0 km</h4>
+                        </div>
+                        <div class="col-6 text-end">
+                            <small>Estimated Fare</small>
+                            <h4 id="fare">₹0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-book" id="bookBtn" disabled>
+                <i class="fas fa-check-circle"></i> Book Now
+            </button>
+        </div>
+
+        <!-- Track Ride Panel -->
+        <div id="trackPanel" class="content-panel">
+            <h3><i class="fas fa-map-marked-alt text-info"></i> Track Your Ride</h3>
+            <div id="activeRideInfo" class="mt-4">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No active rides at the moment.
+                    <a href="#" onclick="showPanel('book')">Click here</a> to book a ride.
+                </div>
+            </div>
+        </div>
+
+        <!-- Ride History Panel with Complete Button -->
+        <div id="historyPanel" class="content-panel">
+            <h3><i class="fas fa-history text-success"></i> Ride History</h3>
+            <div id="bookingsList" class="mt-4">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p>Loading your rides...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Panel with Update Button -->
+        <div id="profilePanel" class="content-panel">
+            <h3><i class="fas fa-user-circle text-warning"></i> My Profile</h3>
+            <div class="row mt-4">
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-user-circle fa-5x text-muted"></i>
+                    <div class="mt-3">
+                        <span class="badge bg-success" id="userRole">Loading...</span>
+                    </div>
+                    <div class="stats-card mt-3">
+                        <h5 id="rideCount">0</h5>
+                        <small>Total Rides</small>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <!-- View Mode -->
+                    <div id="viewMode">
+                        <div class="profile-field">
+                            <div class="profile-label">Full Name</div>
+                            <div class="profile-value" id="viewName">-</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-label">Email Address</div>
+                            <div class="profile-value" id="viewEmail">-</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-label">Phone Number</div>
+                            <div class="profile-value" id="viewPhone">-</div>
+                        </div>
+                        <button class="btn-edit" onclick="enableEditMode()">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div id="editMode" style="display: none;">
+                        <div class="profile-field">
+                            <div class="profile-label">Full Name</div>
+                            <input type="text" class="form-control" id="editName" placeholder="Enter your name">
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-label">Email Address</div>
+                            <input type="email" class="form-control" id="editEmail" placeholder="Enter your email">
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-label">Phone Number</div>
+                            <input type="tel" class="form-control" id="editPhone" placeholder="Enter your phone">
+                        </div>
+                        <button class="btn-update" onclick="updateProfile()">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button class="btn-edit ms-2" onclick="disableEditMode()" style="background: #6c757d;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script>
+        let selectedCab = null;
+        
+        $(document).ready(function() {
+            loadBookings();
+            loadProfile();
+            
+            $('.cab-option').click(function() {
+                $('.cab-option').removeClass('selected');
+                $(this).addClass('selected');
+                selectedCab = $(this).data('cab');
+                $('#selectedCab').val(selectedCab);
+                calculateFare();
+            });
+            
+            $('#pickup, #drop').on('input', function() {
+                if ($('#pickup').val() && $('#drop').val() && selectedCab) {
+                    calculateFare();
+                }
+            });
+            
+            $('#bookBtn').click(function() {
+                createBooking();
+            });
+        });
+        
+        function showPanel(panel) {
+            $('.content-panel').removeClass('active');
+            $('#' + panel + 'Panel').addClass('active');
+            
+            if (panel === 'history') {
+                loadBookings();
+            }
+            if (panel === 'track') {
+                checkActiveRide();
+            }
+            if (panel === 'profile') {
+                loadProfile();
+            }
+        }
+        
+        function calculateFare() {
+            if ($('#pickup').val() && $('#drop').val() && selectedCab) {
+                $.ajax({
+                    url: '/api/calculate-fare',
+                    method: 'POST',
+                    data: {
+                        pickup: $('#pickup').val(),
+                        drop: $('#drop').val(),
+                        cabType: selectedCab
+                    },
+                    success: function(response) {
+                        $('#distance').text(response.distance.toFixed(1) + ' km');
+                        $('#fare').text('₹' + response.fare);
+                        $('#fareDisplay').fadeIn();
+                        $('#bookBtn').prop('disabled', false);
+                    },
+                    error: function() {
+                        showToast('error', 'Failed to calculate fare');
+                    }
+                });
+            }
+        }
+        
+        function createBooking() {
+            const bookingData = {
+                pickupLocation: $('#pickup').val(),
+                dropLocation: $('#drop').val(),
+                cabType: selectedCab,
+                distance: parseFloat($('#distance').text()) || 0,
+                fare: parseFloat($('#fare').text().replace('₹', '')) || 0
+            };
+            
+            $.ajax({
+                url: '/api/book',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(bookingData),
+                success: function(response) {
+                    if (response.success) {
+                        showToast('success', response.message);
+                        loadBookings();
+                        resetForm();
+                        showPanel('history');
+                    } else {
+                        showToast('error', response.message);
+                    }
+                },
+                error: function() {
+                    showToast('error', 'Booking failed. Please try again.');
+                }
+            });
+        }
+        
+        function loadBookings() {
+            $.ajax({
+                url: '/api/bookings',
+                method: 'GET',
+                success: function(bookings) {
+                    displayBookings(bookings);
+                    checkActiveRide();
+                    updateRideCount(bookings);
+                },
+                error: function() {
+                    $('#bookingsList').html('<div class="alert alert-danger">Failed to load bookings</div>');
+                }
+            });
+        }
+        
+        function displayBookings(bookings) {
+            if (!bookings || bookings.length === 0) {
+                $('#bookingsList').html(`
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted"></i>
+                        <p class="mt-2">No rides yet. Book your first ride!</p>
+                        <button class="btn btn-primary" onclick="showPanel('book')">Book Now</button>
+                    </div>
+                `);
+                return;
+            }
+            
+            let html = '';
+            bookings.forEach(booking => {
+                html += `
+                    <div class="booking-item status-${booking.status}">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <small class="text-muted">Booking #${booking.id}</small><br>
+                                <strong>${new Date(booking.bookingTime).toLocaleString()}</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <div><i class="fas fa-circle text-success fa-xs"></i> ${booking.pickupLocation}</div>
+                                <div class="my-1"><i class="fas fa-arrow-down fa-xs"></i></div>
+                                <div><i class="fas fa-flag-checkered text-danger fa-xs"></i> ${booking.dropLocation}</div>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="badge bg-secondary">${booking.cabType}</span>
+                                <h6 class="mt-1">₹${booking.fare}</h6>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="badge status-${booking.status}">${booking.status}</span>
+                            </div>
+                            <div class="col-md-2">
+                `;
+                
+                // Show Cancel button for PENDING rides
+                if (booking.status === 'PENDING') {
+                    html += `<button class="btn-cancel" onclick="cancelRide(${booking.id})">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>`;
+                }
+                
+                // Show Complete button for CONFIRMED/IN_PROGRESS rides
+                if (booking.status === 'CONFIRMED' || booking.status === 'IN_PROGRESS') {
+                    html += `<button class="btn-complete" onclick="completeRide(${booking.id})">
+                                <i class="fas fa-check"></i> Complete
+                            </button>`;
+                }
+                
+                html += `</div></div></div>`;
+            });
+            $('#bookingsList').html(html);
+        }
+        
+        function cancelRide(id) {
+            if (confirm('Are you sure you want to cancel this ride?')) {
+                $.ajax({
+                    url: '/api/cancel/' + id,
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('success', 'Ride cancelled successfully');
+                            loadBookings();
+                        } else {
+                            showToast('error', response.message);
+                        }
+                    }
+                });
+            }
+        }
+        
+        function completeRide(id) {
+            if (confirm('Mark this ride as completed?')) {
+                $.ajax({
+                    url: '/api/complete/' + id,
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('success', 'Ride completed! Thank you for riding with us.');
+                            loadBookings();
+                        } else {
+                            showToast('error', response.message);
+                        }
+                    }
+                });
+            }
+        }
+        
+        function checkActiveRide() {
+            $.ajax({
+                url: '/api/bookings',
+                method: 'GET',
+                success: function(bookings) {
+                    const activeRide = bookings.find(b => b.status === 'PENDING' || b.status === 'CONFIRMED' || b.status === 'IN_PROGRESS');
+                    if (activeRide) {
+                        $('#activeRideInfo').html(`
+                            <div class="alert alert-success">
+                                <i class="fas fa-taxi fa-2x float-end"></i>
+                                <strong>🚖 Active Ride in Progress</strong><br><br>
+                                <strong>Booking #${activeRide.id}</strong><br>
+                                📍 <strong>From:</strong> ${activeRide.pickupLocation}<br>
+                                🎯 <strong>To:</strong> ${activeRide.dropLocation}<br>
+                                🚗 <strong>Cab:</strong> ${activeRide.cabType}<br>
+                                💰 <strong>Fare:</strong> ₹${activeRide.fare}<br>
+                                📊 <strong>Status:</strong> ${activeRide.status}
+                                <div class="progress mt-3">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: ${activeRide.status === 'PENDING' ? '30%' : (activeRide.status === 'CONFIRMED' ? '60%' : '90%')}">
+                                        ${activeRide.status === 'PENDING' ? 'Driver Assigned' : (activeRide.status === 'CONFIRMED' ? 'On the Way' : 'Almost There')}
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn-complete" onclick="completeRide(${activeRide.id})">
+                                        <i class="fas fa-check"></i> Mark as Completed
+                                    </button>
+                                    <button class="btn-cancel" onclick="cancelRide(${activeRide.id})">
+                                        <i class="fas fa-times"></i> Cancel Ride
+                                    </button>
+                                </div>
+                            </div>
+                        `);
+                    } else {
+                        $('#activeRideInfo').html(`
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> No active rides at the moment.
+                                <a href="#" onclick="showPanel('book')">Click here</a> to book a ride.
+                            </div>
+                        `);
+                    }
+                }
+            });
+        }
+        
+        function updateRideCount(bookings) {
+            const count = bookings ? bookings.length : 0;
+            $('#rideCount').text(count);
+        }
+        
+        function loadProfile() {
+            $.ajax({
+                url: '/api/profile',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $('#viewName').text(response.name || 'Not set');
+                        $('#viewEmail').text(response.email || 'Not set');
+                        $('#viewPhone').text(response.phone || 'Not set');
+                        $('#userRole').text(response.role || 'USER');
+                        
+                        $('#editName').val(response.name || '');
+                        $('#editEmail').val(response.email || '');
+                        $('#editPhone').val(response.phone || '');
+                    }
+                }
+            });
+        }
+        
+        function enableEditMode() {
+            $('#viewMode').hide();
+            $('#editMode').show();
+        }
+        
+        function disableEditMode() {
+            $('#viewMode').show();
+            $('#editMode').hide();
+            loadProfile();
+        }
+        
+        function updateProfile() {
+            const name = $('#editName').val();
+            const email = $('#editEmail').val();
+            const phone = $('#editPhone').val();
+            
+            $.ajax({
+                url: '/api/profile/update',
+                method: 'POST',
+                data: { name: name, email: email, phone: phone },
+                success: function(response) {
+                    if (response.success) {
+                        showToast('success', response.message);
+                        disableEditMode();
+                        loadProfile();
+                    } else {
+                        showToast('error', response.message);
+                    }
+                }
+            });
+        }
+        
+        function showToast(type, message) {
+            const bgColor = type === 'success' ? 'bg-success' : 'bg-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            const toast = $(`
+                <div class="toast-notification">
+                    <div class="toast show" role="alert">
+                        <div class="toast-header ${bgColor} text-white">
+                            <i class="fas ${icon} me-2"></i>
+                            <strong class="me-auto">Notification</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                </div>
+            `);
+            $('#toastContainer').append(toast);
+            setTimeout(() => toast.fadeOut(() => toast.remove()), 3000);
+        }
+        
+        function resetForm() {
+            $('#pickup').val('Airport');
+            $('#drop').val('City Center');
+            $('.cab-option').removeClass('selected');
+            selectedCab = null;
+            $('#fareDisplay').hide();
+            $('#bookBtn').prop('disabled', true);
+        }
+        
+        showPanel('book');
+    </script>
+</body>
+</html>

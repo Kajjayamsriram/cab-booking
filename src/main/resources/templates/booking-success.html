@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - SafeRide</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .success-container {
+            max-width: 600px;
+            margin: 100px auto;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .btn-home {
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container success-container">
+        <div class="success-card">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Booking Confirmed!</h2>
+            <p>Your cab has been booked successfully</p>
+            
+            <div class="booking-details" th:if="${booking != null}">
+                <h5>Booking Details:</h5>
+                <p><strong>Booking ID:</strong> #<span th:text="${booking.id}"></span></p>
+                <p><strong>Pickup:</strong> <span th:text="${booking.pickupLocation}"></span></p>
+                <p><strong>Drop:</strong> <span th:text="${booking.dropLocation}"></span></p>
+                <p><strong>Cab Type:</strong> <span th:text="${booking.cabType}"></span></p>
+                <p><strong>Fare:</strong> ₹<span th:text="${booking.fare}"></span></p>
+                <p><strong>Status:</strong> <span class="badge bg-warning" th:text="${booking.status}"></span></p>
+            </div>
+            
+            <a href="/booking/new" class="btn-home">
+                <i class="fas fa-plus"></i> Book Another Ride
+            </a>
+            <a href="/booking/my-bookings" class="btn-home">
+                <i class="fas fa-list"></i> View My Rides
+            </a>
+        </div>
+    </div>
+</body>
+</html>
