@@ -10,3 +10,7 @@ git clone https://github.com/Kajjayamsriram/cab-booking.git
 cd cab-booking; docker build -t cab-image:v1 .
 docker run -d --name cab-cont -p 1111:8080 cab-image:v1
 ```
+## alpine images results and usage
+- Using alpine images reduced my image size to 80 MB
+- Normal image took 343MB with alpine it's reduced to 263MB 
+- For using alpine image for this project copy src/ and pom.xml to alpineDockerfile directory.
